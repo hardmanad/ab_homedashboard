@@ -1,0 +1,12 @@
+{
+  "name": "Home Dashboard",
+  "id": "home-dashboard",
+  "description": "A Home Dashboard extension for Adobe Workfront.",
+  "version": "0.0.1",
+  "mainMenuItems": [
+    {
+      "label": "Home Dashboard",
+      "id": "home-dashboard"
+    }
+  ]
+}

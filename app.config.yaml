@@ -1,0 +1,44 @@
+bashextensions:
+  workfront/ui/1:
+    $include: src/workfront-ui-1/ext.config.yaml
+    runtimeManifest:
+      packages:
+        home-dashboard:
+          license: Apache-2.0
+          actions:
+            wfapi:
+              function: src/workfront-ui-1/actions/wfapi/index.js
+              web: 'yes'
+              runtime: nodejs:22
+              inputs:
+                LOG_LEVEL: debug
+              annotations:
+                require-adobe-auth: false
+                final: true
+            pendingApprovalsWidget:
+              function: src/workfront-ui-1/actions/pendingApprovalsWidget/index.js
+              web: 'yes'
+              runtime: nodejs:22
+              inputs:
+                LOG_LEVEL: debug
+              annotations:
+                require-adobe-auth: false
+                final: true
+            campaignTimelineWidget:
+              function: src/workfront-ui-1/actions/campaignTimelineWidget/index.js
+              web: 'yes'
+              runtime: nodejs:22
+              inputs:
+                LOG_LEVEL: debug
+              annotations:
+                require-adobe-auth: false
+                final: true
+            projectsTableWidget:
+              function: src/workfront-ui-1/actions/projectsTableWidget/index.js
+              web: 'yes'
+              runtime: nodejs:22
+              inputs:
+                LOG_LEVEL: debug
+              annotations:
+                require-adobe-auth: false
+                final: true

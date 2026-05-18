@@ -1,0 +1,53 @@
+{
+  "name": "home-dashboard",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@adobe/aio-sdk": "^6",
+    "@adobe/exc-app": "^0.2.21",
+    "@adobe/generator-add-action-generic": "^2.0.0",
+    "@adobe/react-spectrum": "^3.43.0",
+    "@adobe/uix-guest": "^0.10.0",
+    "@adobe/workfront-ui-ext-tpl": "^0.0.7",
+    "@react-spectrum/list": "^3.0.0-rc.0",
+    "axios": "^1.11.0",
+    "chalk": "^4",
+    "core-js": "^3.6.4",
+    "jwt-decode": "^4.0.0",
+    "node-fetch": "^2.6.0",
+    "node-html-parser": "^5.4.2-0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-error-boundary": "^4.1.2",
+    "react-router-dom": "^6.3.0",
+    "react-scripts": "5.0.1",
+    "regenerator-runtime": "^0.13.5",
+    "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.7",
+    "@babel/plugin-transform-react-jsx": "^7.8.3",
+    "@babel/polyfill": "^7.8.7",
+    "@babel/preset-env": "^7.8.7",
+    "@openwhisk/wskdebug": "^1.3.0",
+    "ajv": "^8.12.0",
+    "eslint": "^8",
+    "eslint-plugin-jest": "^27.2.3",
+    "jest": "^27.2.4"
+  },
+  "scripts": {
+    "test": "jest --passWithNoTests ./test",
+    "e2e": "jest --collectCoverage=false --testRegex ./e2e",
+    "lint": "eslint --ignore-pattern web-src --no-error-on-unmatched-pattern test src actions",
+    "lint:fix": "npm run lint -- --fix",
+    "transform:yaml-to-json": "node node_modules/@adobe/uix-guest/scripts/generate-metadata.js"
+  },
+  "description": "a main menu portal demo experience ",
+  "aio-app-builder-templates": [
+    "@adobe/workfront-ui-ext-tpl",
+    "@adobe/generator-add-action-generic"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
