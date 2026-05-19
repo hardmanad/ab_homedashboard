@@ -1,164 +1,215 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Flex, View, Heading, Text, ActionButton, ProgressCircle, Provider, defaultTheme } from '@adobe/react-spectrum';
-import authTokenManager from '../../utils/authTokenManager';
+import React, { useState, useEffect } from 'react';
+import { Flex, ProgressCircle, Provider, defaultTheme } from '@adobe/react-spectrum';
 import actionWebInvoke, { getActionUrl } from '../../utils/utils';
 import { getPriorityName } from '../../../constants';
 
 const APPROVALS_ACTION_PATH = '/api/v1/web/home-dashboard/pendingApprovalsWidget';
 const WFAPI_ACTION_PATH = '/api/v1/web/home-dashboard/wfapi';
-import { attach } from "@adobe/uix-guest";
 
 const PendingApprovalsWidget = ({ accessToken, hostname }) => {
-  const [approvals, setApprovals] = useState([]);
+  const [objectApprovals, setObjectApprovals] = useState([]);
+  const [documentApprovals, setDocumentApprovals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isButtonApproving, setIsButtonApproving] = useState(false);
-  const [isButtonRejecting, setIsButtonRejecting] = useState(false);
+  // Track in-flight decisions per approval ID: { [id]: 'approve' | 'reject' }
+  const [processingApprovals, setProcessingApprovals] = useState({});
 
   useEffect(() => {
-    if (!accessToken || !hostname) return; // Only run if accessToken and hostname is set and changed
-    // You can now use accessToken here
+    if (!accessToken || !hostname) return;
     const fetchData = async () => {
       const actionUrl = getActionUrl(APPROVALS_ACTION_PATH);
       const actionHeaders = { 'Authorization': `Bearer ${accessToken}` };
-      const actionParams = { 'hostname': hostname };
+      const actionParams = { hostname };
       const approvalsReq = await actionWebInvoke(actionUrl, actionHeaders, actionParams);
-      const myApprovals = await approvalsReq.json();
+      const data = await approvalsReq.json();
 
-      const processedApprovals = await Promise.all(
-        myApprovals.slice(0, 3).map(async (item) => {
-          if (actionUrl.includes('fusion')) {
-            item = JSON.parse(item);
-          }
-          const wfDate = item.date;
-          const fixedDate = wfDate.replace(/:(?!.*:)/, '.');
-          const date = new Date(fixedDate);
-          const formattedDate = date.toISOString().slice(0, 10);
-
-          return {
-            id: item.id,
-            objCode: item.objCode,
-            title: item.title,
-            priority: getPriorityName(item.priority),
-            date: formattedDate,
-            approvalStepName: item.approvalStepName,
-            approvalSubmittedBy: item.approvalSubmittedBy
-          };
-        })
-      );
-      setApprovals(processedApprovals);
+      if (Array.isArray(data)) {
+        setObjectApprovals(data.slice(0, 3).map(processObjectApproval));
+        setDocumentApprovals([]);
+      } else {
+        setObjectApprovals((data.objectApprovals || []).slice(0, 3).map(processObjectApproval));
+        setDocumentApprovals((data.documentApprovals || []).slice(0, 3));
+      }
       setIsLoading(false);
     };
     fetchData();
   }, [accessToken, hostname]);
 
-  const handleDecision = async (objID, objCode, decision) => {
-    decision === 'approve' ? setIsButtonApproving(true) : setIsButtonRejecting(true);
-    console.log(`Decision ${decision} on approval with ID: ${objID}`);
+  function processObjectApproval(item) {
+    return {
+      id: item.id,
+      objCode: item.objCode,
+      title: item.title,
+      priority: getPriorityName(item.priority),
+      date: item.date,
+      approvalStepName: item.approvalStepName,
+      approvalSubmittedBy: item.approvalSubmittedBy
+    };
+  }
+
+  const handleDecision = async (approval, decision) => {
+    const approvalId = approval.id;
+    setProcessingApprovals(prev => ({ ...prev, [approvalId]: decision }));
+
     const actionUrl = getActionUrl(WFAPI_ACTION_PATH);
     const actionHeaders = { 'Authorization': `Bearer ${accessToken}` };
-    const actionParams = {
-      'requestObj': {
-        'hostname': hostname,
-        'method': 'put',
-        'objCode': objCode,
-        'ID': objID,
-        'parameters': {
-          'action': `${decision}Approval`
+
+    let actionParams;
+    if (approval.objCode === 'DOCV') {
+      actionParams = {
+        requestObj: {
+          type: 'uas-decision',
+          hostname,
+          documentVersionId: approval.documentVersionId,
+          decision: decision === 'approve' ? 'approved' : 'needs work'
         }
-      }
+      };
+    } else {
+      actionParams = {
+        requestObj: {
+          hostname,
+          method: 'put',
+          objCode: approval.objCode,
+          ID: approval.id,
+          parameters: {
+            action: `${decision}Approval`
+          }
+        }
+      };
     }
+
     const res = await actionWebInvoke(actionUrl, actionHeaders, actionParams);
 
     if (res.status === 200) {
-      console.log(`Successfully decisioned approval with ID: ${objID}`);
-      // Optionally, you can refresh the approvals list after a decision
-      setApprovals(prev => prev.filter(approval => approval.id !== objID));
-      decision === 'approve' ? setIsButtonApproving(false) : setIsButtonRejecting(false);
+      if (approval.objCode === 'DOCV') {
+        setDocumentApprovals(prev => prev.filter(a => a.id !== approvalId));
+      } else {
+        setObjectApprovals(prev => prev.filter(a => a.id !== approvalId));
+      }
     }
-  }
 
-  const objCodeToType = { PROJ: 'project', TASK: 'task', OPTASK: 'issue' };
-  const objLink = (objID, objCode) =>
-    `https://${hostname}/${objCodeToType[objCode]}/${objID}`;
+    setProcessingApprovals(prev => {
+      const next = { ...prev };
+      delete next[approvalId];
+      return next;
+    });
+  };
+
+  const objLink = (approval) => {
+    if (approval.objCode === 'DOCV') {
+      return `https://${hostname}/document/${approval.documentId}`;
+    }
+    const types = { PROJ: 'project', TASK: 'task', OPTASK: 'issue' };
+    return `https://${hostname}/${types[approval.objCode] || 'object'}/${approval.id}`;
+  };
+
+  const renderApprovalCard = (approval) => {
+    const isDoc = approval.objCode === 'DOCV';
+    const isApproving = processingApprovals[approval.id] === 'approve';
+    const isRejecting = processingApprovals[approval.id] === 'reject';
+
+    return (
+      <div key={approval.id} className="approval-card">
+        <div className="approval-header">
+          <div>
+            <h4 className="approval-title">
+              <a href={objLink(approval)} target="_blank" rel="noopener noreferrer" className="widget-link">
+                <span title={isDoc && approval.title?.length > 25 ? approval.title : undefined}>
+                  {isDoc && approval.title?.length > 25 ? approval.title.slice(0, 25) + '...' : approval.title}
+                </span>
+              </a>
+            </h4>
+            <p className="approval-type">{approval.approvalStepName}</p>
+          </div>
+          {!isDoc && (
+            <span className={`approval-priority ${approval.priority}`}>
+              {approval.priority}
+            </span>
+          )}
+        </div>
+
+        <div className="approval-meta">
+          <span>Requested by {approval.approvalSubmittedBy}</span>
+          <span>{approval.date}</span>
+        </div>
+
+        <div className="approval-actions">
+          {isApproving ? (
+            <button className="btn btn-secondary btn-sm btn-processing">
+              Approving...
+            </button>
+          ) : (
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => handleDecision(approval, 'approve')}
+              disabled={!!processingApprovals[approval.id]}
+            >
+              Approve
+            </button>
+          )}
+          {isRejecting ? (
+            <button className="btn btn-secondary btn-sm btn-processing">
+              Rejecting...
+            </button>
+          ) : (
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => handleDecision(approval, 'reject')}
+              disabled={!!processingApprovals[approval.id]}
+            >
+              Reject
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const totalCount = objectApprovals.length + documentApprovals.length;
+  const showSectionLabels = objectApprovals.length > 0 && documentApprovals.length > 0;
 
   return (
-    <div className="widget-card">
+    <div className="widget-card approvals-widget">
       <div className="widget-header">
         <div>
           <h3 className="widget-title">Pending Approvals</h3>
-          <p className="widget-subtitle">{approvals.length} Pending Approvals</p>
+          <p className="widget-subtitle">{totalCount} Pending Approvals</p>
         </div>
       </div>
 
       {isLoading ? (
-
-        <Provider theme={defaultTheme}> 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <Provider theme={defaultTheme}>
+          <div className="approvals-loading">
             <Flex justifyContent="center" alignItems="center" height="size-600">
-              <ProgressCircle aria-label="Loading campaigns..." isIndeterminate />
+              <ProgressCircle aria-label="Loading approvals..." isIndeterminate />
             </Flex>
           </div>
         </Provider>
+      ) : totalCount === 0 ? (
+        <div className="approvals-empty">
+          <h4>No Approvals Assigned</h4>
+        </div>
       ) : (
-        <>
-          
-            {approvals.length == 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'center' }}>
-                <h4>No Approvals Assigned</h4>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {approvals.map((approval) => (
-                  <div key={approval.id} className="approval-card">
-                    <div className="approval-header">
-                      <div>
-                        <h4 className="approval-title"><a href={objLink(approval.id, approval.objCode)} target="_blank" rel="noopener noreferrer" className="widget-link">{approval.title}</a></h4>
-                        <p className="approval-type">Approval Step: {approval.approvalStepName}</p>
-                      </div>
-                      <span className={`approval-priority ${approval.priority}`}>
-                        {approval.priority}
-                      </span>
-                    </div>
-
-                    <div className="approval-meta">
-                      <span>Requested by {approval.approvalSubmittedBy}</span>
-                      <span>{approval.date}</span>
-                    </div>
-
-                    <div className="approval-actions">
-                      
-                        {isButtonApproving ? (
-                          <button className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.5rem 1rem', cursor: 'default' }}>
-                            Approving...
-                          </button>
-                        ) : (
-                          <button className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.5rem 1rem' }} onClick={() => handleDecision(approval.id, approval.objCode, 'approve')}>
-                            Approve
-                          </button>
-                        )}
-                      
-                      
-                        {isButtonRejecting ? (
-                          <button className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.5rem 1rem', cursor: 'default' }}>
-                            Rejecting...
-                          </button>
-                        ) : (
-                          <button className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.5rem 1rem' }} onClick={() => handleDecision(approval.id, approval.objCode, 'reject')}>
-                            Reject
-                          </button>
-                        )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-        </>
+        <div className="approvals-list">
+          {objectApprovals.length > 0 && (
+            <>
+              {showSectionLabels && (
+                <p className="approvals-section-label">Work Items</p>
+              )}
+              {objectApprovals.map(renderApprovalCard)}
+            </>
+          )}
+          {documentApprovals.length > 0 && (
+            <>
+              {showSectionLabels && (
+                <p className="approvals-section-label approvals-section-label--documents">Documents</p>
+              )}
+              {documentApprovals.map(renderApprovalCard)}
+            </>
+          )}
+        </div>
       )}
-
     </div>
   );
-
 };
 
-export default PendingApprovalsWidget; 
+export default PendingApprovalsWidget;
