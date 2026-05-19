@@ -22,8 +22,7 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
         const projectsReq = await actionWebInvoke(actionUrl, actionHeaders, actionParams);
         const fetchedProjects = await projectsReq.json();
         
-        console.log('Fetched Projects:', fetchedProjects);
-        setProjects(fetchedProjects);
+setProjects(fetchedProjects);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching projects:', error);
@@ -47,11 +46,7 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
     return `${hours}h`;
   };
 
-  const handleProjectClick = (projectId) => {
-    if (hostname) {
-      window.top.location.href = `https://${hostname}/project/${projectId}`;
-    }
-  };
+  const projectLink = (projectId) => `https://${hostname}/project/${projectId}`;
 
   const handleStatusChange = async (projectId, newStatus) => {
     console.log(`Updating project ${projectId} status to ${newStatus}`);
@@ -177,12 +172,14 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
                 <tr key={project.id}>
                   <td className="reference-number">{project.referenceNumber}</td>
                   <td>
-                    <span 
-                      className="project-name-link" 
-                      onClick={() => handleProjectClick(project.id)}
+                    <a
+                      className="project-name-link"
+                      href={projectLink(project.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {project.name}
-                    </span>
+                    </a>
                   </td>
                   <td>{project.owner}</td>
                   <td>
@@ -276,31 +273,6 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
         </div>
       )}
 
-      {!isLoading && projects.length > 0 && (
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginTop: '1rem',
-          paddingTop: '1rem',
-          borderTop: '1px solid #f1f5f9'
-        }}>
-          <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.75rem', color: '#64748b' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
-              <span>Current</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6' }}></div>
-              <span>Requested</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b' }}></div>
-              <span>On Hold</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

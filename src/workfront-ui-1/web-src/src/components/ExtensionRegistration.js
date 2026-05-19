@@ -19,7 +19,7 @@ function ExtensionRegistration() {
             return [
               {
                 id: 'home-dashboard',
-                url: '/index.html#/my-work-view',
+                url: '/index.html#/home-dashboard',
                 label: 'Home Dashboard',
                 icon: icon1,
               },

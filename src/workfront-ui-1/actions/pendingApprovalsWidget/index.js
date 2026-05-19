@@ -30,7 +30,7 @@ async function main (params) {
       'objCode': 'APPROVAL',
       'parameters': {
         'query': 'myApprovals',
-        'fields': 'approvalStartDate,currentApprovalStep:name,submittedBy:name'
+        'fields': 'approvalStartDate,currentApprovalStep:name,submittedBy:name,priority'
       }
     });
 

@@ -8,7 +8,7 @@ import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import ExtensionRegistration from "./ExtensionRegistration";
 
 
-import Myworkview from "./mainMenu/myWorkView";
+import HomeDashboard from "./mainMenu/home-dashboard";
 
 function App() {
   return (
@@ -19,8 +19,8 @@ function App() {
           <Route exact path="index.html" element={<ExtensionRegistration />} />  
           {/* @todo YOUR CUSTOM ROUTES SHOULD BE HERE */}          
           <Route
-            exact path="my-work-view"
-            element={<Myworkview />}
+            exact path="home-dashboard"
+            element={<HomeDashboard />}
           />
         </Routes>
       </ErrorBoundary>

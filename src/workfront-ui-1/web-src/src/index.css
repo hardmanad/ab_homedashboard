@@ -27,6 +27,15 @@ code {
     monospace;
 }
 
+.widget-link,
+.widget-link:visited,
+.widget-link:hover,
+.widget-link:active {
+  color: rgb(0, 84, 182);
+  text-decoration: none;
+  cursor: pointer;
+}
+
 #root {
   min-height: 100vh;
 } 
@@ -353,8 +362,9 @@ body {
 
 .campaign-name {
   font-weight: 600;
-  color: #1e293b;
+  color: rgb(0, 84, 182);
   margin-bottom: 0.25rem;
+  cursor: pointer;
 }
 
 .campaign-endDate {
@@ -767,17 +777,14 @@ body {
   font-size: 0.8125rem;
 }
 
-.project-name-link {
-  color: #3b82f6;
+.project-name-link,
+.project-name-link:visited,
+.project-name-link:hover,
+.project-name-link:active {
+  color: rgb(0, 84, 182);
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.project-name-link:hover {
-  color: #2563eb;
-  text-decoration: underline;
 }
 
 .status-badge,

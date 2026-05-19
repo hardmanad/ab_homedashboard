@@ -42,7 +42,7 @@
     "lint:fix": "npm run lint -- --fix",
     "transform:yaml-to-json": "node node_modules/@adobe/uix-guest/scripts/generate-metadata.js"
   },
-  "description": "a main menu portal demo experience ",
+  "description": "A Workfront Home Dashboard extension built using Adobe I/O App Builder",
   "aio-app-builder-templates": [
     "@adobe/workfront-ui-ext-tpl",
     "@adobe/generator-add-action-generic"

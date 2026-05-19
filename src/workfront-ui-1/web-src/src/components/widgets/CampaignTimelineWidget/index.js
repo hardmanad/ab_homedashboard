@@ -20,8 +20,7 @@ const CampaignTimelineWidget = ({ accessToken, hostname }) => {
       const actionParams = { 'hostname': hostname };
       const campaignsReq = await actionWebInvoke(actionUrl, actionHeaders, actionParams);
       const myCampaigns = await campaignsReq.json();
-      console.log(myCampaigns);
-      setMyCampaigns(myCampaigns);
+setMyCampaigns(myCampaigns);
       setIsLoading(false);
     };
     fetchData();
@@ -105,11 +104,8 @@ const CampaignTimelineWidget = ({ accessToken, hostname }) => {
     }).format(amount);
   };
 
-  const objLink = async (workspaceId, recordTypeId, id) => {
-    window.top.location.href = `https://${hostname}/maestro/${workspaceId}/${recordTypeId}/${id}/record/details`;
-    //window.open(`https://${hostname}/${objType}/${objID}`, "_blank")
-    //https://experience.adobe.com/#/@bilbroug/so:bilbroug-Production/workfront/maestro/Ws66c4fc9f266c16020a99ee89/Rt66c4fc9f266c16020a99eec6/Rc6723a34f4ce72669e562b86c/record/details
-  }
+  const objLink = (workspaceId, recordTypeId, id) =>
+    `https://${hostname}/maestro/${workspaceId}/${recordTypeId}/${id}/record/details`;
 
   const today = new Date().toLocaleDateString('en-US', {
     month: '2-digit', day: '2-digit', year: 'numeric'
@@ -134,68 +130,69 @@ const CampaignTimelineWidget = ({ accessToken, hostname }) => {
         </div>
       </div>
 
-      <div className="timeline-container">
-        {/*<div className="timeline-axis">
-          <span>Due Timeline: {today} - {plusOneYear}</span>
-          <span>Dec 2023</span>
-          <span>Jan 2024</span>
-          <span>Mar 2024</span>
-          <span>Apr 2024</span>
-          <span>May 2024</span>
-        </div>*/}
-
-        {displayCampaigns.map((campaign) => (
-          <div key={campaign.id} className="campaign-item">
-            <div className="campaign-info">
-              <div className="campaign-name" style={{ cursor: 'pointer' }} onClick={() => objLink(campaign.workspaceId, campaign.recordTypeId, campaign.id)}>{campaign.name}
-                <br />
-                <span className="campaign-due">Due: </span>
-                <span className="campaign-endDate">{campaign.endDate}</span>
+      {isLoading ? (
+        <Provider theme={defaultTheme}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <Flex justifyContent="center" alignItems="center" height="size-600">
+              <ProgressCircle aria-label="Loading campaigns..." isIndeterminate />
+            </Flex>
+          </div>
+        </Provider>
+      ) : (
+        <>
+          <div className="timeline-container">
+            {displayCampaigns.map((campaign) => (
+              <div key={campaign.id} className="campaign-item">
+                <div className="campaign-info">
+                  <div className="campaign-name">
+                    <a href={objLink(campaign.workspaceId, campaign.recordTypeId, campaign.id)} target="_blank" rel="noopener noreferrer" className="widget-link">{campaign.name}</a>
+                    <br />
+                    <span className="campaign-due">Due: </span>
+                    <span className="campaign-endDate">{campaign.endDate}</span>
+                  </div>
+                  <div className="campaign-meta">
+                    <span className={`campaign-tag ${campaign.tag.toLowerCase()}`}>
+                      {campaign.tag}
+                    </span>
+                    <span>{campaign.person}</span>
+                    <span className={`campaign-status ${campaign.status}`}>
+                      {campaign.status}
+                    </span>
+                    <span>{formatCurrency(campaign.spent)}/{formatCurrency(campaign.budget)}</span>
+                  </div>
+                </div>
+                <div className="timeline-bar" style={{ width: `${campaign.progress}%` }}>
+                  <div className={`timeline-bar ${campaign.status}`}></div>
+                </div>
               </div>
-              <div className="campaign-meta">
-                <span className={`campaign-tag ${campaign.tag.toLowerCase()}`}>
-                  {campaign.tag}
-                </span>
-                <span>{campaign.person}</span>
-                <span className={`campaign-status ${campaign.status}`}>
-                  {campaign.status}
-                </span>
-                <span>{formatCurrency(campaign.spent)}/{formatCurrency(campaign.budget)}</span>
+            ))}
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: '1rem',
+            paddingTop: '1rem',
+            borderTop: '1px solid #f1f5f9'
+          }}>
+            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#64748b' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
+                <span>Active</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b' }}></div>
+                <span>Upcoming</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></div>
+                <span>On Hold</span>
               </div>
             </div>
-            <div className="timeline-bar" style={{ width: `${campaign.progress}%` }}>
-              <div className={`timeline-bar ${campaign.status}`}></div>
-            </div>
           </div>
-        ))}
-      </div>
-
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginTop: '1rem',
-        paddingTop: '1rem',
-        borderTop: '1px solid #f1f5f9'
-      }}>
-        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#64748b' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
-            <span>Active</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b' }}></div>
-            <span>Upcoming</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></div>
-            <span>On Hold</span>
-          </div>
-        </div>
-        {/*<div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-          Timeline: {today} - {plusOneYear}
-        </div>*/}
-      </div>
+        </>
+      )}
     </div>
   );
 };

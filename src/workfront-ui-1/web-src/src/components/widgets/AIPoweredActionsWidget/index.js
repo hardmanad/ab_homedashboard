@@ -48,7 +48,7 @@ const AIPoweredActionsWidget = () => {
         {actions.map((action) => (
           <div key={action.id} className="ai-action-card" onClick={() => actionLink(action.target)}>
             <div className="ai-action-icon">{action.icon}</div>
-            <div className="ai-action-title">{action.title}</div>
+            <div className={`ai-action-title${action.target ? ' widget-link' : ''}`}>{action.title}</div>
             <div className="ai-action-desc">{action.description}</div>
           </div>
         ))}

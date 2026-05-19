@@ -8,8 +8,6 @@ const APPROVALS_ACTION_PATH = '/api/v1/web/home-dashboard/pendingApprovalsWidget
 const WFAPI_ACTION_PATH = '/api/v1/web/home-dashboard/wfapi';
 import { attach } from "@adobe/uix-guest";
 
-
-
 const PendingApprovalsWidget = ({ accessToken, hostname }) => {
   const [approvals, setApprovals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,49 +77,16 @@ const PendingApprovalsWidget = ({ accessToken, hostname }) => {
     }
   }
 
-  let objType;
-  const objLink = async (objID, objCode) => {
-    switch (objCode) {
-      case 'PROJ':
-        objType = 'project';
-        break;
-      case 'TASK':
-        objType = 'task';
-        break;
-      case 'OPTASK':
-        objType = 'issue';
-        break;
-    }
-    window.top.location.href = `https://${hostname}/${objType}/${objID}`;
-    //window.open(`https://${hostname}/${objType}/${objID}`, "_blank")
-  }
+  const objCodeToType = { PROJ: 'project', TASK: 'task', OPTASK: 'issue' };
+  const objLink = (objID, objCode) =>
+    `https://${hostname}/${objCodeToType[objCode]}/${objID}`;
 
   return (
     <div className="widget-card">
       <div className="widget-header">
         <div>
           <h3 className="widget-title">Pending Approvals</h3>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginTop: '0.25rem'
-          }}>
-            <div style={{
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              background: '#64748b',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: '0.75rem',
-              fontWeight: '600'
-            }}>
-              {approvals.length}
-            </div>
-          </div>
+          <p className="widget-subtitle">{approvals.length} Pending Approvals</p>
         </div>
       </div>
 
@@ -147,7 +112,7 @@ const PendingApprovalsWidget = ({ accessToken, hostname }) => {
                   <div key={approval.id} className="approval-card">
                     <div className="approval-header">
                       <div>
-                        <h4 className="approval-title" style={{ cursor: 'pointer' }} onClick={() => objLink(approval.id, approval.objCode)}>{approval.title}</h4>
+                        <h4 className="approval-title"><a href={objLink(approval.id, approval.objCode)} target="_blank" rel="noopener noreferrer" className="widget-link">{approval.title}</a></h4>
                         <p className="approval-type">Approval Step: {approval.approvalStepName}</p>
                       </div>
                       <span className={`approval-priority ${approval.priority}`}>
@@ -188,12 +153,8 @@ const PendingApprovalsWidget = ({ accessToken, hostname }) => {
               </div>
             )}
             
-          
-          
         </>
       )}
-
-
 
     </div>
   );

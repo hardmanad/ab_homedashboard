@@ -13,14 +13,13 @@ import authTokenManager from '../utils/authTokenManager';
 
 
 
-
-const MyWorkView = () => {
+const HomeDashboard = () => {
     const [accessToken, setAccessToken] = useState('');
     const [hostname, sethostname] = useState('');
     useEffect(() => {
       const doAttach = async () => {
         try {
-          const conn = await attach({ id: "my-work-view" }); // replace with your actual extensionId
+          const conn = await attach({ id: "home-dashboard" });
           const auth = conn?.sharedContext?.get("auth");
           const imsToken = auth?.imsToken;
           if (imsToken) {
@@ -53,12 +52,12 @@ const MyWorkView = () => {
                   <PendingApprovalsWidget accessToken={accessToken} hostname={hostname} />
                 </div>
               </div>
-    
+
               {/* Projects Table Section - Full Width */}
               <div className="full-width-section">
                 <ProjectsTableWidget accessToken={accessToken} hostname={hostname} />
               </div>
-    
+
               {/* Middle Section - Live Campaigns & Media Insights */}
               <div className="middle-section">
                 <div className="live-campaigns-section">
@@ -68,7 +67,7 @@ const MyWorkView = () => {
                   <MediaInsightsWidget />
                 </div>
               </div>
-    
+
               {/* Bottom Section - Top Assets & AI Actions */}
               <div className="bottom-section">
                 <div className="top-assets-section">
@@ -84,4 +83,4 @@ const MyWorkView = () => {
       );
 };
 
-export default MyWorkView;
+export default HomeDashboard;
