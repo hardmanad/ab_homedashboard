@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ProgressCircle, Provider, defaultTheme } from '@adobe/react-spectrum';
-import actionWebInvoke, { buildActionUrl } from '../../utils/utils';
+import actionWebInvoke, { getActionUrl } from '../../utils/utils';
+import { getPriorityName, getPriorityValue, getPriorityColor, getStatusName, getStatusColor } from '../../../constants';
+
+const PROJECTS_ACTION_PATH = '/api/v1/web/home-dashboard/projectsTableWidget';
+const WFAPI_ACTION_PATH = '/api/v1/web/home-dashboard/wfapi';
 
 const ProjectsTableWidget = ({ accessToken, hostname }) => {
   const [projects, setProjects] = useState([]);
@@ -12,7 +16,7 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
     
     const fetchData = async () => {
       try {
-        const actionUrl = buildActionUrl('/api/v1/web/home-dashboard/projectsTableWidget');
+        const actionUrl = getActionUrl(PROJECTS_ACTION_PATH);
         const actionHeaders = { 'Authorization': `Bearer ${accessToken}` };
         const actionParams = { 'hostname': hostname };
         const projectsReq = await actionWebInvoke(actionUrl, actionHeaders, actionParams);
@@ -54,7 +58,7 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
     setUpdatingProject(projectId);
     
     try {
-      const actionUrl = buildActionUrl('/api/v1/web/home-dashboard/wfapi');
+      const actionUrl = getActionUrl(WFAPI_ACTION_PATH);
       const actionHeaders = { 'Authorization': `Bearer ${accessToken}` };
       const actionParams = {
         'requestObj': {
@@ -76,7 +80,7 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
         setProjects(prevProjects => 
           prevProjects.map(proj => 
             proj.id === projectId 
-              ? { ...proj, status: getStatusName(newStatus) } 
+              ? { ...proj, status: newStatus }
               : proj
           )
         );
@@ -94,7 +98,7 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
     setUpdatingProject(projectId);
     
     try {
-      const actionUrl = buildActionUrl('/api/v1/web/home-dashboard/wfapi');
+      const actionUrl = getActionUrl(WFAPI_ACTION_PATH);
       const actionHeaders = { 'Authorization': `Bearer ${accessToken}` };
       const actionParams = {
         'requestObj': {
@@ -116,7 +120,7 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
         setProjects(prevProjects => 
           prevProjects.map(proj => 
             proj.id === projectId 
-              ? { ...proj, priority: getPriorityName(newPriority) } 
+              ? { ...proj, priority: newPriority }
               : proj
           )
         );
@@ -129,81 +133,6 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
     }
   };
 
-  const getStatusName = (statusCode) => {
-    const statusMap = {
-      'CUR': 'Current',
-      'REQ': 'Requested',
-      'ONH': 'On Hold',
-      'PLN': 'Planning',
-      'CPL': 'Complete',
-      'DED': 'Dead'
-    };
-    return statusMap[statusCode] || statusCode;
-  };
-
-  const getStatusCode = (statusName) => {
-    const statusMap = {
-      'Current': 'CUR',
-      'Requested': 'REQ',
-      'On Hold': 'ONH',
-      'Planning': 'PLN',
-      'Complete': 'CPL',
-      'Dead': 'DED'
-    };
-    return statusMap[statusName] || statusName;
-  };
-
-  const getPriorityName = (priorityValue) => {
-    const priorityMap = {
-      0: 'None',
-      1: 'Low',
-      2: 'Normal',
-      3: 'High',
-      4: 'Urgent'
-    };
-    return priorityMap[priorityValue] || 'Normal';
-  };
-
-  const getPriorityValue = (priorityName) => {
-    const priorityMap = {
-      'None': 0,
-      'Low': 1,
-      'Normal': 2,
-      'High': 3,
-      'Urgent': 4
-    };
-    return priorityMap[priorityName] !== undefined ? priorityMap[priorityName] : 2;
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Current':
-        return '#10b981';
-      case 'Requested':
-        return '#3b82f6';
-      case 'On Hold':
-        return '#f59e0b';
-      case 'Planning':
-        return '#3b82f6';
-      case 'Complete':
-        return '#64748b';
-      default:
-        return '#64748b';
-    }
-  };
-
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'High':
-        return '#ef4444';
-      case 'Medium':
-        return '#f59e0b';
-      case 'Low':
-        return '#64748b';
-      default:
-        return '#64748b';
-    }
-  };
 
   return (
     <div className="widget-card">
@@ -259,11 +188,11 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
                   <td>
                     <select
                       className="status-dropdown"
-                      value={getStatusCode(project.status)}
+                      value={project.status}
                       onChange={(e) => handleStatusChange(project.id, e.target.value)}
                       disabled={updatingProject === project.id}
-                      style={{ 
-                        backgroundColor: `${getStatusColor(project.status)}15`, 
+                      style={{
+                        backgroundColor: `${getStatusColor(project.status)}15`,
                         color: getStatusColor(project.status),
                         border: `1px solid ${getStatusColor(project.status)}40`,
                         borderRadius: '4px',
@@ -285,11 +214,11 @@ const ProjectsTableWidget = ({ accessToken, hostname }) => {
                   <td>
                     <select
                       className="priority-dropdown"
-                      value={getPriorityValue(project.priority)}
+                      value={project.priority}
                       onChange={(e) => handlePriorityChange(project.id, parseInt(e.target.value))}
                       disabled={updatingProject === project.id}
-                      style={{ 
-                        backgroundColor: `${getPriorityColor(project.priority)}15`, 
+                      style={{
+                        backgroundColor: `${getPriorityColor(project.priority)}15`,
                         color: getPriorityColor(project.priority),
                         border: `1px solid ${getPriorityColor(project.priority)}40`,
                         borderRadius: '4px',

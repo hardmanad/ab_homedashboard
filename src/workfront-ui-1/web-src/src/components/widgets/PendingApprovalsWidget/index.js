@@ -1,59 +1,31 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Flex, View, Heading, Text, ActionButton, ProgressCircle, Provider, defaultTheme } from '@adobe/react-spectrum';
 import authTokenManager from '../../utils/authTokenManager';
-import actionWebInvoke, { buildActionUrl } from '../../utils/utils';
+import actionWebInvoke, { getActionUrl } from '../../utils/utils';
+import { getPriorityName } from '../../../constants';
+
+const APPROVALS_ACTION_PATH = '/api/v1/web/home-dashboard/pendingApprovalsWidget';
+const WFAPI_ACTION_PATH = '/api/v1/web/home-dashboard/wfapi';
 import { attach } from "@adobe/uix-guest";
 
 
 
 const PendingApprovalsWidget = ({ accessToken, hostname }) => {
-  //const [accessToken, setAccessToken] = useState('');
-  //const [hostname, sethostname] = useState('');
   const [approvals, setApprovals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isButtonApproving, setIsButtonApproving] = useState(false);
   const [isButtonRejecting, setIsButtonRejecting] = useState(false);
-  /* Need to get data from main myWorkView.js
-  useEffect(() => {
-    const doAttach = async () => {
-      try {
-        const conn = await attach({ id: "my-work-view" }); // replace with your actual extensionId
-        const auth = conn?.sharedContext?.get("auth");
-        const imsToken = auth?.imsToken;
-        if (imsToken) {
-          authTokenManager.initialize(imsToken);
-          setAccessToken(imsToken);
-        }
-        const hostname = conn?.sharedContext?.get("hostname");
-        if (hostname) {
-          sethostname(hostname);
-        }
-
-      } catch (e) {
-        console.error("Failed to attach and get auth token", e);
-      }
-    };
-    doAttach();
-  }, []);
-  */
 
   useEffect(() => {
     if (!accessToken || !hostname) return; // Only run if accessToken and hostname is set and changed
     // You can now use accessToken here
     const fetchData = async () => {
-      const actionUrl = buildActionUrl('/api/v1/web/home-dashboard/pendingApprovalsWidget');
+      const actionUrl = getActionUrl(APPROVALS_ACTION_PATH);
       const actionHeaders = { 'Authorization': `Bearer ${accessToken}` };
       const actionParams = { 'hostname': hostname };
       const approvalsReq = await actionWebInvoke(actionUrl, actionHeaders, actionParams);
       const myApprovals = await approvalsReq.json();
 
-      const priorityMap = {
-        '0': 'None',
-        '1': 'Low',
-        '2': 'Normal',
-        '3': 'High',
-        '4': 'Urgent'
-      };
       const processedApprovals = await Promise.all(
         myApprovals.slice(0, 3).map(async (item) => {
           if (actionUrl.includes('fusion')) {
@@ -62,13 +34,13 @@ const PendingApprovalsWidget = ({ accessToken, hostname }) => {
           const wfDate = item.date;
           const fixedDate = wfDate.replace(/:(?!.*:)/, '.');
           const date = new Date(fixedDate);
-          const formattedDate = date.toISOString().slice(0, 10); // "2025-08-07"
+          const formattedDate = date.toISOString().slice(0, 10);
 
           return {
             id: item.id,
             objCode: item.objCode,
             title: item.title,
-            priority: priorityMap[item.priority],
+            priority: getPriorityName(item.priority),
             date: formattedDate,
             approvalStepName: item.approvalStepName,
             approvalSubmittedBy: item.approvalSubmittedBy
@@ -80,12 +52,11 @@ const PendingApprovalsWidget = ({ accessToken, hostname }) => {
     };
     fetchData();
   }, [accessToken, hostname]);
-  //console.log(`My IMS Token: ${accessToken}`);
 
   const handleDecision = async (objID, objCode, decision) => {
     decision === 'approve' ? setIsButtonApproving(true) : setIsButtonRejecting(true);
     console.log(`Decision ${decision} on approval with ID: ${objID}`);
-    const actionUrl = buildActionUrl('/api/v1/web/home-dashboard/wfapi');
+    const actionUrl = getActionUrl(WFAPI_ACTION_PATH);
     const actionHeaders = { 'Authorization': `Bearer ${accessToken}` };
     const actionParams = {
       'requestObj': {
@@ -124,43 +95,6 @@ const PendingApprovalsWidget = ({ accessToken, hostname }) => {
     window.top.location.href = `https://${hostname}/${objType}/${objID}`;
     //window.open(`https://${hostname}/${objType}/${objID}`, "_blank")
   }
-
-  /*
-  const approvals = [
-    {
-      id: 1,
-      title: 'Q2 Marketing Campaign',
-      type: 'Budget Approval',
-      priority: 'high',
-      requester: 'John Smith',
-      date: '2024-01-15'
-    },
-    {
-      id: 2,
-      title: 'Brand Guidelines Update',
-      type: 'Creative Review',
-      priority: 'medium',
-      requester: 'Maria Garcia',
-      date: '2024-01-14'
-    },
-    {
-      id: 3,
-      title: 'Website Redesign',
-      type: 'Stakeholder Sign-off',
-      priority: 'high',
-      requester: 'David Lee',
-      date: '2024-01-13'
-    },
-    {
-      id: 4,
-      title: 'Product Launch',
-      type: 'Legal Review',
-      priority: 'medium',
-      requester: 'Mike Wilson',
-      date: '2024-01-11'
-    }
-  ];
-  */
 
   return (
     <div className="widget-card">
@@ -254,27 +188,6 @@ const PendingApprovalsWidget = ({ accessToken, hostname }) => {
               </div>
             )}
             
-          {/*
-          {approvals.length == 0 ? (
-            null
-          ) : (
-            <div style={{
-              marginTop: '1rem',
-              paddingTop: '1rem',
-              borderTop: '1px solid #f1f5f9',
-              textAlign: 'center'
-            }}>
-              <a href="#" style={{
-                color: '#3b82f6',
-                textDecoration: 'none',
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}>
-                View All Approvals
-              </a>
-            </div>
-          )}
-          */}
           
           
         </>

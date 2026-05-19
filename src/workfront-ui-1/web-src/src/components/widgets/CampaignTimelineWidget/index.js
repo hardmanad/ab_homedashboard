@@ -2,43 +2,20 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Flex, View, Heading, Text, ActionButton, ProgressCircle, Provider, defaultTheme } from '@adobe/react-spectrum';
 import authTokenManager from '../../utils/authTokenManager';
-import actionWebInvoke, { buildActionUrl } from '../../utils/utils';
+import actionWebInvoke, { getActionUrl } from '../../utils/utils';
+
+const CAMPAIGN_ACTION_PATH = '/api/v1/web/home-dashboard/campaignTimelineWidget';
 import { attach } from "@adobe/uix-guest";
 
 const CampaignTimelineWidget = ({ accessToken, hostname }) => {
-  //const [accessToken, setAccessToken] = useState('');
-  //const [hostname, sethostname] = useState('');
   const [myCampaigns, setMyCampaigns] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  /* Need to get data from main myWorkView.js
-  useEffect(() => {
-    const doAttach = async () => {
-      try {
-        const conn = await attach({ id: "my-work-view" }); // replace with your actual extensionId
-        const auth = conn?.sharedContext?.get("auth");
-        const imsToken = auth?.imsToken;
-        if (imsToken) {
-          authTokenManager.initialize(imsToken);
-          setAccessToken(imsToken);
-        }
-        const hostname = conn?.sharedContext?.get("hostname");
-        if (hostname) {
-          sethostname(hostname);
-        }
-
-      } catch (e) {
-        console.error("Failed to attach and get auth token", e);
-      }
-    };
-    doAttach();
-  }, []);
-  */
 
   useEffect(() => {
     if (!accessToken || !hostname) return; // Only run if accessToken and hostname is set and changed
     // You can now use accessToken here
     const fetchData = async () => {
-      const actionUrl = buildActionUrl('/api/v1/web/home-dashboard/campaignTimelineWidget');
+      const actionUrl = getActionUrl(CAMPAIGN_ACTION_PATH);
       const actionHeaders = { 'Authorization': `Bearer ${accessToken}` };
       const actionParams = { 'hostname': hostname };
       const campaignsReq = await actionWebInvoke(actionUrl, actionHeaders, actionParams);
@@ -145,10 +122,8 @@ const CampaignTimelineWidget = ({ accessToken, hostname }) => {
   const yyyy = d.getFullYear();
   const plusOneYear = `${mm}/${dd}/${yyyy}`;
 
-  if(!myCampaigns.length > 0) {
-    myCampaigns = staticCampaigns;
-  }
-  const campaignCount = myCampaigns.length;
+  const displayCampaigns = myCampaigns.length === 0 ? staticCampaigns : myCampaigns;
+  const campaignCount = displayCampaigns.length;
 
   return (
     <div className="widget-card">
@@ -169,7 +144,7 @@ const CampaignTimelineWidget = ({ accessToken, hostname }) => {
           <span>May 2024</span>
         </div>*/}
 
-        {myCampaigns.map((campaign) => (
+        {displayCampaigns.map((campaign) => (
           <div key={campaign.id} className="campaign-item">
             <div className="campaign-info">
               <div className="campaign-name" style={{ cursor: 'pointer' }} onClick={() => objLink(campaign.workspaceId, campaign.recordTypeId, campaign.id)}>{campaign.name}

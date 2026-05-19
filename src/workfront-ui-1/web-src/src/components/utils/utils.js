@@ -46,17 +46,18 @@ async function actionWebInvoke (actionUrl, headers = {}, params = {}, options = 
   return response;
 }
 
-export function getActionHost() {
-  const host = process.env.REACT_APP_AIO_STATIC_HOST || process.env.AIO_STATIC_HOST;
-  if (!host) {
-    throw new Error('AIO_STATIC_HOST is not set. Set AIO_STATIC_HOST in your .env file.');
+export function getActionUrl(actionPath) {
+  if (process.env.AIO_STATIC_HOST) {
+    return `https://${process.env.AIO_STATIC_HOST}${actionPath}`;
   }
-  return host;
-}
 
-export function buildActionUrl(path) {
-  const host = getActionHost();
-  return `https://${host}${path}`;
+  const currentHost = window.location.origin;
+  if (currentHost.includes('localhost')) {
+    return `${currentHost}${actionPath}`;
+  }
+
+  const namespace = window.location.hostname.split('.')[0];
+  return `https://${namespace}.adobeioruntime.net${actionPath}`;
 }
 
 export default actionWebInvoke

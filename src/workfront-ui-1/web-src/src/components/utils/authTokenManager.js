@@ -14,8 +14,6 @@ class AuthTokenManager {
     initialize(baseToken) {
         this.baseToken = baseToken;
         this.decodedToken = this.decodeToken(baseToken);
-        // Set the token as a cookie
-        document.cookie = `ims_sid=${baseToken}; path=/`;
     }
 
     /**
@@ -77,8 +75,6 @@ class AuthTokenManager {
             if (response.data && response.data.access_token) {
                 this.baseToken = response.data.access_token;
                 this.decodedToken = this.decodeToken(this.baseToken);
-                // Update the cookie with the new token
-                document.cookie = `ims_sid=${this.baseToken}; path=/`;
                 return this.baseToken;
             }
 

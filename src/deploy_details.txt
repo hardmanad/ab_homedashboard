@@ -1,0 +1,32 @@
+Updating log forwarding configuration
+  (node:69245) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  App metadata generated successfully
+  - Building actions for 'workfront/ui/1'
+  ✔ Built 4 action(s) for 'workfront/ui/1'
+  - Building web assets
+  ✔ Building web assets for 'workfront/ui/1'
+  - Deploying actions for 'workfront/ui/1'
+  ✔ Deployed 4 action(s) for 'workfront/ui/1'
+  - Deploying web assets for 'workfront/ui/1'
+  ✔ Deploying web assets for 'workfront/ui/1'
+  ✔ All static assets for the App Builder application in workspace: workfront/ui/1 were successfully deployed to the CDN. Files deployed :
+    • 1 HTML page(s)
+    • 1 CSS file(s)
+    • 2 .map file(s)
+    • 1 Javascript file(s)
+
+  Your deployed actions:
+  web actions:
+    -> https://27200-wfhomedash-stage.adobeio-static.net/api/v1/web/home-dashboard/wfapi
+    -> https://27200-wfhomedash-stage.adobeio-static.net/api/v1/web/home-dashboard/pendingApprovalsWidget
+    -> https://27200-wfhomedash-stage.adobeio-static.net/api/v1/web/home-dashboard/campaignTimelineWidget
+    -> https://27200-wfhomedash-stage.adobeio-static.net/api/v1/web/home-dashboard/projectsTableWidget
+  To view your deployed application:
+    -> https://27200-wfhomedash-stage.adobeio-static.net/index.html
+  To view your deployed application in the Experience Cloud shell:
+    -> https://experience.adobe.com/?devMode=true#/custom-apps/?localDevUrl=https://27200-wfhomedash-stage.adobeio-static.net/index.html
+  - Getting Extension Points in Workspace=Stage...
+  - Updating Extension Points 'endpoints' in Workspace=Stage...
+  New Extension Point(s) in Workspace 'Stage': 'workfront/ui/1'
+  Successful deployment
