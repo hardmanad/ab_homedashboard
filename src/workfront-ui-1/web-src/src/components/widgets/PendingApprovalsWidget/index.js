@@ -4,7 +4,7 @@ import actionWebInvoke, { getActionUrl } from '../../utils/utils';
 import { getPriorityName } from '../../../constants';
 
 const APPROVALS_ACTION_PATH = '/api/v1/web/home-dashboard/pendingApprovalsWidget';
-const WFAPI_ACTION_PATH = '/api/v1/web/home-dashboard/wfapi';
+const SUBMIT_APPROVAL_ACTION_PATH = '/api/v1/web/home-dashboard/submitApprovalDecision';
 
 const PendingApprovalsWidget = ({ accessToken, hostname }) => {
   const [objectApprovals, setObjectApprovals] = useState([]);
@@ -50,32 +50,12 @@ const PendingApprovalsWidget = ({ accessToken, hostname }) => {
     const approvalId = approval.id;
     setProcessingApprovals(prev => ({ ...prev, [approvalId]: decision }));
 
-    const actionUrl = getActionUrl(WFAPI_ACTION_PATH);
+    const actionUrl = getActionUrl(SUBMIT_APPROVAL_ACTION_PATH);
     const actionHeaders = { 'Authorization': `Bearer ${accessToken}` };
 
-    let actionParams;
-    if (approval.objCode === 'DOCV') {
-      actionParams = {
-        requestObj: {
-          type: 'uas-decision',
-          hostname,
-          documentVersionId: approval.documentVersionId,
-          decision: decision === 'approve' ? 'approved' : 'needs work'
-        }
-      };
-    } else {
-      actionParams = {
-        requestObj: {
-          hostname,
-          method: 'put',
-          objCode: approval.objCode,
-          ID: approval.id,
-          parameters: {
-            action: `${decision}Approval`
-          }
-        }
-      };
-    }
+    const actionParams = approval.objCode === 'DOCV'
+      ? { hostname, documentVersionId: approval.documentVersionId, decision }
+      : { hostname, approvalId: approval.id, objCode: approval.objCode, decision };
 
     const res = await actionWebInvoke(actionUrl, actionHeaders, actionParams);
 

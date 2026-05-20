@@ -6,8 +6,17 @@ extensions:
         home-dashboard:
           license: Apache-2.0
           actions:
-            wfapi:
-              function: src/workfront-ui-1/actions/wfapi/index.js
+            updateProject:
+              function: src/workfront-ui-1/actions/updateProject/index.js
+              web: 'yes'
+              runtime: nodejs:22
+              inputs:
+                LOG_LEVEL: debug
+              annotations:
+                require-adobe-auth: false
+                final: true
+            submitApprovalDecision:
+              function: src/workfront-ui-1/actions/submitApprovalDecision/index.js
               web: 'yes'
               runtime: nodejs:22
               inputs:
@@ -32,6 +41,9 @@ extensions:
               runtime: nodejs:22
               inputs:
                 LOG_LEVEL: debug
+                WF_PLANNING_WORKSPACE_ID: $WF_PLANNING_WORKSPACE_ID
+                WF_PLANNING_CAMPAIGN_RECORD_TYPE_ID: $WF_PLANNING_CAMPAIGN_RECORD_TYPE_ID
+                WF_PLANNING_ON_HOLD_STATUS_ID: $WF_PLANNING_ON_HOLD_STATUS_ID
               annotations:
                 require-adobe-auth: false
                 final: true

@@ -12,6 +12,7 @@ const { randomUUID } = require('crypto');
 const { errorResponse, getBearerToken, stringParameters, checkMissingRequestInputs } = require('../utils/utils');
 
 const UAS_BASE = 'https://workfront.adobe.io/unified-approvals/public/api/v1/approvals';
+const HOSTNAME_RE = /^([a-z0-9-]+\.)+workfront\.(adobe\.)?com$/;
 
 function formatWfDate(rawDate) {
   if (!rawDate) return '';
@@ -35,6 +36,10 @@ async function main(params) {
     const requiredHeaders = ['Authorization'];
     const errorMessage = checkMissingRequestInputs(params, requiredParams, requiredHeaders);
     if (errorMessage) return errorResponse(400, errorMessage, logger);
+
+    if (!HOSTNAME_RE.test(params.hostname)) {
+      return errorResponse(400, 'invalid hostname', logger);
+    }
 
     const token = getBearerToken(params);
 
@@ -60,6 +65,12 @@ async function main(params) {
     const res = await fetch(url.toString(), {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+
+    if (!res.ok) {
+      const body = await res.text();
+      logger.error(`AWAPVL fetch failed: ${res.status}: ${body}`);
+      return errorResponse(res.status, 'Failed to fetch pending approvals', logger);
+    }
 
     const body = await res.json();
     const allApprovals = body.data || [];

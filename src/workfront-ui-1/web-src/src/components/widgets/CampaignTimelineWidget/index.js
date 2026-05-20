@@ -39,7 +39,6 @@ setMyCampaigns(myCampaigns);
       progress: 85,
       startDate: 'Dec 2023',
       endDate: 'Jan 2024',
-      milestone: 'Dec 31'
     },
     {
       id: 2,
@@ -52,7 +51,6 @@ setMyCampaigns(myCampaigns);
       progress: 65,
       startDate: 'Jan 2024',
       endDate: 'Mar 2024',
-      milestone: 'Jan 14'
     },
     {
       id: 3,
@@ -65,7 +63,6 @@ setMyCampaigns(myCampaigns);
       progress: 40,
       startDate: 'Jan 2024',
       endDate: 'Feb 2024',
-      milestone: 'Jan 31'
     },
     {
       id: 4,
@@ -78,7 +75,6 @@ setMyCampaigns(myCampaigns);
       progress: 25,
       startDate: 'Feb 2024',
       endDate: 'May 2024',
-      milestone: 'Feb 14'
     },
     {
       id: 5,
@@ -91,7 +87,6 @@ setMyCampaigns(myCampaigns);
       progress: 15,
       startDate: 'Feb 2024',
       endDate: 'Jun 2024',
-      milestone: 'Feb 29'
     }
   ];
 
@@ -151,7 +146,14 @@ setMyCampaigns(myCampaigns);
                     <span className="campaign-endDate">{campaign.endDate}</span>
                   </div>
                   <div className="campaign-meta">
-                    <span className={`campaign-tag ${campaign.tag.toLowerCase()}`}>
+                    <span
+                      className="campaign-tag"
+                      style={{
+                        backgroundColor: `${campaign.tagColor || '#3b82f6'}20`,
+                        color: campaign.tagColor || '#3b82f6',
+                        border: `1px solid ${campaign.tagColor || '#3b82f6'}40`
+                      }}
+                    >
                       {campaign.tag}
                     </span>
                     <span>{campaign.person}</span>

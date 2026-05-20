@@ -4,7 +4,7 @@ import actionWebInvoke, { getActionUrl } from '../../utils/utils';
 import { getPriorityName, getPriorityValue, getPriorityColor, getStatusName, getStatusColor } from '../../../constants';
 
 const PROJECTS_ACTION_PATH = '/api/v1/web/home-dashboard/projectsTableWidget';
-const WFAPI_ACTION_PATH = '/api/v1/web/home-dashboard/wfapi';
+const UPDATE_PROJECT_ACTION_PATH = '/api/v1/web/home-dashboard/updateProject';
 
 const ProjectsTableWidget = ({ accessToken, hostname }) => {
   const [projects, setProjects] = useState([]);
@@ -53,20 +53,10 @@ setProjects(fetchedProjects);
     setUpdatingProject(projectId);
     
     try {
-      const actionUrl = getActionUrl(WFAPI_ACTION_PATH);
+      const actionUrl = getActionUrl(UPDATE_PROJECT_ACTION_PATH);
       const actionHeaders = { 'Authorization': `Bearer ${accessToken}` };
-      const actionParams = {
-        'requestObj': {
-          'hostname': hostname,
-          'method': 'put',
-          'objCode': 'PROJ',
-          'ID': projectId,
-          'parameters': {
-            'status': newStatus
-          }
-        }
-      };
-      
+      const actionParams = { hostname, projectId, status: newStatus };
+
       const response = await actionWebInvoke(actionUrl, actionHeaders, actionParams);
       
       if (response.status === 200) {
@@ -93,20 +83,10 @@ setProjects(fetchedProjects);
     setUpdatingProject(projectId);
     
     try {
-      const actionUrl = getActionUrl(WFAPI_ACTION_PATH);
+      const actionUrl = getActionUrl(UPDATE_PROJECT_ACTION_PATH);
       const actionHeaders = { 'Authorization': `Bearer ${accessToken}` };
-      const actionParams = {
-        'requestObj': {
-          'hostname': hostname,
-          'method': 'put',
-          'objCode': 'PROJ',
-          'ID': projectId,
-          'parameters': {
-            'priority': newPriority
-          }
-        }
-      };
-      
+      const actionParams = { hostname, projectId, priority: newPriority };
+
       const response = await actionWebInvoke(actionUrl, actionHeaders, actionParams);
       
       if (response.status === 200) {
